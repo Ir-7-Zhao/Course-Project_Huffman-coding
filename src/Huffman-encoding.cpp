@@ -58,6 +58,27 @@ void buildCodeTable(Node* root, string code, unordered_map<unsigned char, string
 }
 
 // ===================== 哈夫曼编码 =====================
+/*
+ * 此函数将逻辑上的二进制位流（存储在 string 类型的 bits 中，如 "1011..."），
+ * 紧密地打包成物理字节数组（vector<unsigned char>）。
+ *
+ * 原始的 'bits' 字符串中，每个 '1' 或 '0' 是一个 char 类型，占用 1 个字节（8 位）。
+ * 这对于表示单个二进制位来说是极大的空间浪费。
+ * 该函数的目的就是消除这种浪费：
+ * 1. 取原始字符串中的 8 个逻辑位 ('1'/'0' 字符)。
+ * 2. 通过位操作，将这 8 个逻辑位填入一个 unsigned char (1 字节) 的 8 个物理位中。
+ * 3. 将打包好的字节添加到结果向量中。
+ * 这样，原来 8 个字节才能存储的 8 个二进制位，现在只需 1 个字节即可存储。
+ *
+ * 注意：哈夫曼编码本身（即哪个符号对应哪个 '0'/'1' 串）是在构建 table 时完成的。
+ * 此处的 'bits' 已经是根据 table 生成的完整编码序列。
+ * 本函数仅负责将这个已存在的编码序列从低效的字符数组形式，转换为高效的位打包字节数组形式。
+ * 最后不足 8 位的部分也会作为一个完整的字节存入结果向量，其高位为实际数据，低位可能是填充的 0。
+ */
+
+// 逻辑上的二进制位流”强调的是数据的内容和顺序是 0 和 1 的序列，而不关心它当前是用 string 存还是用 vector<char> 存，
+// 或者是否已经紧密地打包到了 vector<unsigned char> 的位里面。它描述的是数据的内容和性质，而不是它的存储格式。
+// 代码 huffmanEncode 就是将这种逻辑上的位流，从低效的 string 表示形式，转换为高效的物理字节存储形式。
 vector<unsigned char> huffmanEncode(const vector<unsigned char>& data, unordered_map<unsigned char, string>& table) {
     string bits;
     for (unsigned char c : data)
@@ -69,7 +90,7 @@ vector<unsigned char> huffmanEncode(const vector<unsigned char>& data, unordered
         string byteStr = bits.substr(i, 8);
         unsigned char byte = 0;
         for (char b : byteStr)
-            byte = (byte << 1) | (b == '1');
+            byte = (byte << 1) | (b == '1');  //关键
         result.push_back(byte);
     }
     return result;
@@ -285,5 +306,7 @@ int main() {
     testRealTxt();
     testRealBmp();
     testRealWav();
+
+    system("pause");
     return 0;
 }
